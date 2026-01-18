@@ -1,17 +1,21 @@
 import os
 import requests
 
-# Njibou el Key men el system (security khouya)
 api_key = os.getenv("GEMINI_API_KEY")
+user_credits = 1  # 1 Free Credit kima bghit
 
-def start_ai(command):
-    if not api_key:
-        return "❌ Error: API Key is missing f Termux!"
+def start_ai(command, duration):
+    if user_credits <= 0:
+        return "❌ No credits left! Please pay via PayPal or RedotPay to continue."
     
+    # Chart ta3 2 minutes
+    if duration > 120:
+        return "⚠️ Free Tier: Video must be under 2 minutes. Upgrade for longer videos!"
+
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
     data = {
-        "contents": [{"parts": [{"text": f"Act as a video automation assistant. User wants: {command}. Explain what ffmpeg command is needed briefly."}]}]
+        "contents": [{"parts": [{"text": f"User duration: {duration}s. Command: {command}. Explain what to do."}]}]
     }
     
     try:
@@ -21,11 +25,19 @@ def start_ai(command):
         return f"❌ Error: {e}"
 
 def main():
-    print("--- 🚀 PlainEnglish-AI + Gemini (Light) v1.0 ---")
-    user_cmd = input("What do you want to do? ")
-    print("\n🤖 Gemini is thinking...")
-    print(start_ai(user_cmd))
+    global user_credits
+    print(f"--- 🚀 PlainEnglish-AI | Credits: {user_credits} ---")
+    
+    duration = int(input("Video duration (in seconds): "))
+    cmd = input("What do you want to do? ")
+    
+    print("\n🤖 Processing...")
+    result = start_ai(cmd, duration)
+    print(result)
+    
+    if "Processing" in result or "Gemini" in result:
+        user_credits -= 1
+        print(f"\n✅ Done! Remaining credits: {user_credits}")
 
 if __name__ == "__main__":
     main()
-
