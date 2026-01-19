@@ -2,42 +2,33 @@ import os
 import requests
 
 api_key = os.getenv("GEMINI_API_KEY")
-user_credits = 1  # 1 Free Credit kima bghit
+user_credits = 1 
 
-def start_ai(command, duration):
+def start_ai(yt_link, task):
     if user_credits <= 0:
-        return "❌ No credits left! Please pay via PayPal or RedotPay to continue."
-    
-    # Chart ta3 2 minutes
-    if duration > 120:
-        return "⚠️ Free Tier: Video must be under 2 minutes. Upgrade for longer videos!"
+        return f"\n💳 OUT OF CREDITS!\nGet 50 more for $5: https://paypal.me/YOUR_USER\nSend screenshot to: your@email.com"
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        "contents": [{"parts": [{"text": f"User duration: {duration}s. Command: {command}. Explain what to do."}]}]
-    }
+    prompt = f"Act as a professional American News Assistant. Summarize this: {yt_link}. Key points only."
     
     try:
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
         return response.json()['candidates'][0]['content']['parts'][0]['text']
-    except Exception as e:
-        return f"❌ Error: {e}"
+    except:
+        return "❌ Error: Service busy. Try again."
 
 def main():
     global user_credits
-    print(f"--- 🚀 PlainEnglish-AI | Credits: {user_credits} ---")
+    print(f"--- 🇺🇸 USA TIME-SAVER AI | Credits: {user_credits} ---")
+    link = input("Paste Video Link: ")
     
-    duration = int(input("Video duration (in seconds): "))
-    cmd = input("What do you want to do? ")
+    print("\n🤖 Processing for you...")
+    res = start_ai(link, "summarize")
+    print("\n" + res)
     
-    print("\n🤖 Processing...")
-    result = start_ai(cmd, duration)
-    print(result)
-    
-    if "Processing" in result or "Gemini" in result:
+    if "https://paypal.me" not in res:
         user_credits -= 1
-        print(f"\n✅ Done! Remaining credits: {user_credits}")
+        print(f"\n✅ 1 Credit used. Remaining: {user_credits}")
 
 if __name__ == "__main__":
     main()
